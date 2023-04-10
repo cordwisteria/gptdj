@@ -170,7 +170,7 @@ def main():
     live_chat_id = get_live_chat_id(youtube, video_id)
     if live_chat_id is None:
         exit(1)
-    text_source_name = input("OBSのテキストソース名を入力してください: ")
+    #text_source_name = input("OBSのテキストソース名を入力してください: ")
 
     next_page_token = None
 
