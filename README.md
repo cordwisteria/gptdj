@@ -1,0 +1,2 @@
+config_template.iniをconfig.iniにリネーム
+API KEYなどの情報を入力。
