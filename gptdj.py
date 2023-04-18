@@ -5,6 +5,7 @@ import configparser
 import random
 import time
 import openai
+import webbrowser
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -81,9 +82,10 @@ def gpt_request(api_key, prompt):
     #     temperature=0.8
     )
 
-    print(f"プロンプト: {prompt}\n\n")
+    print(f"\nプロンプト↓↓↓----------------------------------- \n{prompt}\n")
     # print(f"レスポンス: {response.choices[0].text.strip()}")
-    print("レスポンス:" + json.dumps(response, ensure_ascii=False) + "\n")
+    #print("レスポンス:" + json.dumps(response, ensure_ascii=False) + "\n")
+    print(f"GPTの回答: {response.choices[0]['message']['content']}\n")
     completions = response.choices
     return completions[0]['message']['content'].replace('\n', '')
 #    return completions[0].text.strip()
@@ -126,12 +128,13 @@ def search_and_play_song(headers, song_query):
         print(f"曲が見つかりませんでした: {song_query}")
         return None
     track = tracks[0]
+    #print(f"\ntrack: {track}\n")
     track_name = track['name']
     artist_name = track['artists'][0]['name']
     track_url = track['external_urls']['spotify']
-
     print(f"再生中: {track_name} - {artist_name}")
-    print(f"URL: {track_url}")
+    print(f"URL: {track_url}\n------------------------------------------------")
+    webbrowser.open(track_url, new=2, autoraise=True)
     return track_url
 
 # OBS Websocketに接続する関数
@@ -164,7 +167,7 @@ def main():
     chatgpt_api_key = config['ChatGPT']['api_key']
 
     spotify_headers = spotify_auth(config_file)
-    ws = obs_connect(config_file)
+    #ws = obs_connect(config_file)
 
     video_id = input("配信IDを入力してください: ") 
     live_chat_id = get_live_chat_id(youtube, video_id)
@@ -223,8 +226,8 @@ def main():
         # request.txtの内容を全て出力します
         with open('requests.txt', 'r') as f:
             content = f.read()
-        print("現在のrequest.txtの内容：")
-        print(content)
+        print("\n↓↓↓リクエストリスト↓↓↓")
+        print(f"{content}\n")
 
 if __name__ == "__main__":
     main()
