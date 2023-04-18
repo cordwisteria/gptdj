@@ -6,6 +6,7 @@ import random
 import time
 import openai
 import webbrowser
+import re
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -157,8 +158,8 @@ def update_obs_text(ws, source_name, text):
 
 def main():
     # request.txtファイルを空にします
-    with open('requests.txt', 'w') as f:
-        f.write('')
+    #with open('requests.txt', 'w') as f:
+    #    f.write('')
     # アプリケーションの初期化と設定を行います
     config_file = 'config.ini'
     youtube = youtube_auth(config_file)
@@ -184,13 +185,15 @@ def main():
 
         # 選曲リクエストを抽出し、テキストファイルに保存します
         song_requests = filter_requests(chat_messages)
-        # requests.txtから既存のリクエストを読み込みます
+        # requests.txtから既存のリクエストと再生済みのリクエストを読み込みます
         with open('requests.txt', 'r') as f:
             existing_requests = [line.strip() for line in f.readlines()]
 
-        # 既存のリストにない選曲リクエストのみを追加します
+        played_requests = [re.sub(r'\*$', '', line.strip()) for line in existing_requests if line.strip().endswith('*')]
+
+        # 既存のリストにない選曲リクエストで、再生済みのリクエストでもないもののみ追加します
         for request in song_requests:
-            if request not in existing_requests:
+            if request not in existing_requests and request not in played_requests:
                 with open('requests.txt', 'a') as f:
                     f.write(request + '\n')
 
@@ -198,12 +201,16 @@ def main():
         with open('requests.txt', 'r') as f:
             lines = f.readlines()
 
+        # 再生済みマーク(*)がついていないリクエストのみを抽出します
+        unplayed_requests = [line.strip() for line in lines if not line.strip().endswith('*')]
+
         # ランダムにリクエストを選びます
-        if not lines:
+        if not unplayed_requests:
             time.sleep(10)
             continue
 
-        request_text = random.choice(lines).strip()
+        request_text = random.choice(unplayed_requests)
+
 
         # ChatGPT APIにリクエストを送信し、レスポンスを解析します
         prompt = f'依頼：リクエスト「{request_text}」に答えて1曲だけ選曲してください\n出力形式：曲名 アーティスト名\n※出力形式以外のテキストを回答に含めないでください。'
@@ -218,10 +225,12 @@ def main():
         # 1分間の再生が終わった時点で溜まったリクエストからランダムに1つをピックアップ
         time.sleep(10)
 
-        # 再生済みリクエストをファイルから削除します
+        # 再生済みリクエストにマークをつけます
         with open('requests.txt', 'w') as f:
             for line in lines:
-                if line.strip() != request_text:
+                if line.strip() == request_text:
+                    f.write(line.strip() + "*\n")
+                else:
                     f.write(line)
         # request.txtの内容を全て出力します
         with open('requests.txt', 'r') as f:
