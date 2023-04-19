@@ -134,7 +134,7 @@ def search_and_play_song(headers, song_query):
     artist_name = track['artists'][0]['name']
     track_url = track['external_urls']['spotify']
     print(f"再生中: {track_name} - {artist_name}")
-    print(f"URL: {track_url}\n------------------------------------------------")
+#    print(f"URL: {track_url}\n------------------------------------------------")
     webbrowser.open(track_url, new=2, autoraise=True)
     return track_url
 
